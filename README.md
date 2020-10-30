@@ -87,7 +87,8 @@ Now you are almost ready to run Terraform!
 1. Edit your terraform/locals.tf file to match each Pi and what you want it to perform 
 within the cluster
 
-1. From within the terraform directory run:
+1. From within the terraform directory and using Terraform v0.13 - run:
+`terraform fmt -recursive`
 `terraform init`
 and then
 `terraform plan`
