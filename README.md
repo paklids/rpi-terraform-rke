@@ -20,6 +20,7 @@ remotely via Terraform (see below)
 1. Choose a set of static IP addresses that you will use for each Pi on your network
 
 1. In the root of this project create an ssh key that will be used to connect to each Pi
+
 `ssh-keygen -t rsa -b 4096 -C "terraformuser" -f ./terraformuser`
 
 1. Download 64bit Ubuntu server image here https://ubuntu.com/download/raspberry-pi ( 20.10 tested)
@@ -35,7 +36,7 @@ that you created earlier.
 
 Edit these files to match:
 
-file: `network-config`
+file: `network-config` (edit IP address)
 
 ```
 version: 2
@@ -53,7 +54,7 @@ ethernets:
       addresses: [192.168.1.1,8.8.8.8]
 ```
 
-file: `user-data`
+file: `user-data` (paste in ssh public key)
 
 ```
 #cloud-config
@@ -76,21 +77,26 @@ users:
       - ssh-rsa AAAAB3NzaC1... terraform
 ```
 1. Test that you can now ssh into your freshly built Pi
+
 `ssh -i ./terraformuser terraform@192.168.1.91`
 
 Now you are almost ready to run Terraform!
 
 ## What more do I need?
 
-1. If you used a different username for setup - edit that in the terraform/locals.tf
+1. If you used a different username for setup - edit that in the `terraform/locals.tf`
 
-1. Edit your terraform/locals.tf file to match each Pi and what you want it to perform 
+1. Edit your `terraform/locals.tf` file to match each Pi and what you want it to perform 
 within the cluster
 
 1. From within the terraform directory and using Terraform v0.13 - run:
+
 `terraform fmt -recursive`
+
 `terraform init`
+
 and then
+
 `terraform plan`
 
 If it looks good then run `terraform apply`
@@ -98,10 +104,13 @@ If it looks good then run `terraform apply`
 This will bootstrap the Pi nodes, reboot them and then provision the cluster using `rke`
 
 1. Take the output from Terraform to build your `kube_config_cluster.yml` file used by kubectl
+
 `terraform output kube_config_yaml > kube_config_cluster.yml`
 
 1. Test that the cluster is running successfully
+
 `kubectl --kubeconfig kube_config_cluster.yml version`
+
 `kubectl --kubeconfig kube_config_cluster.yml get nodes`
 
 And there you go - a kubernetes cluster running on Raspberry Pi(s) !
