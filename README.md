@@ -17,19 +17,19 @@ remotely via Terraform (see below)
     * a case for each Pi (a fan preferred)
     * a small gigabit switch to network these together
 
-1. Choose a set of static IP addresses that you will use for each Pi on your network
+2. Choose a set of static IP addresses that you will use for each Pi on your network
 
-1. In the root of this project create an ssh key that will be used to connect to each Pi
+3. In the root of this project create an ssh key that will be used to connect to each Pi
 
 `ssh-keygen -t rsa -b 4096 -C "terraformuser" -f ./terraformuser`
 
-1. Download 64bit Ubuntu server image here https://ubuntu.com/download/raspberry-pi ( 20.10 tested)
+4. Download 64bit Ubuntu server image here https://ubuntu.com/download/raspberry-pi ( 20.10 tested)
 
-1. Write the image to the microSD card using a tool like Etcher or dd.
+5. Write the image to the microSD card using a tool like Etcher or dd.
 
-1. Pull down this repo using `git clone git@github.com:paklids/rpi-terraform-rke.git`
+6. Pull down this repo using `git clone git@github.com:paklids/rpi-terraform-rke.git`
 
-1. Remove the microSD card and reinsert it to your machine. 
+7. Remove the microSD card and reinsert it to your machine. 
 
 You will need to put in the static IP address for each respective Pi and paste in the ssh public key 
 that you created earlier.
@@ -76,7 +76,7 @@ users:
     ssh_authorized_keys:
       - ssh-rsa AAAAB3NzaC1... terraform
 ```
-1. Test that you can now ssh into your freshly built Pi
+8. Test that you can now ssh into your freshly built Pi
 
 `ssh -i ./terraformuser terraform@192.168.1.91`
 
@@ -86,10 +86,10 @@ Now you are almost ready to run Terraform!
 
 1. If you used a different username for setup - edit that in the `terraform/locals.tf`
 
-1. Edit your `terraform/locals.tf` file to match each Pi and what you want it to perform 
+2. Edit your `terraform/locals.tf` file to match each Pi and what you want it to perform 
 within the cluster
 
-1. From within the terraform directory and using Terraform v0.13 - run:
+3. From within the terraform directory and using Terraform v0.13 - run:
 
 `terraform fmt -recursive`
 
@@ -103,11 +103,11 @@ If it looks good then run `terraform apply`
 
 This will bootstrap the Pi nodes, reboot them and then provision the cluster using `rke`
 
-1. Take the output from Terraform to build your `kube_config_cluster.yml` file used by kubectl
+4. Take the output from Terraform to build your `kube_config_cluster.yml` file used by kubectl
 
 `terraform output kube_config_yaml > kube_config_cluster.yml`
 
-1. Test that the cluster is running successfully
+5. Test that the cluster is running successfully
 
 `kubectl --kubeconfig kube_config_cluster.yml version`
 
