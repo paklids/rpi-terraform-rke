@@ -9,18 +9,18 @@ locals {
   # the list of nodes that will be bootstrapped
   nodes = {
     node1 = {
-      hostname = "kibble1"
-      ip_addr  = "192.168.1.61"
+      hostname = "pinode1"
+      ip_addr  = "192.168.1.91"
       role     = ["controlplane", "worker", "etcd"]
     },
     node2 = {
-      hostname = "kibble2"
-      ip_addr  = "192.168.1.62"
+      hostname = "pinode2"
+      ip_addr  = "192.168.1.92"
       role     = ["worker", "etcd"]
     },
     node3 = {
-      hostname = "kibble3"
-      ip_addr  = "192.168.1.63"
+      hostname = "pinode3"
+      ip_addr  = "192.168.1.93"
       role     = ["worker", "etcd"]
     }
   }
