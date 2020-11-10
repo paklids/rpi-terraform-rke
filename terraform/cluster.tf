@@ -17,6 +17,22 @@ resource rke_cluster "berrycluster" {
     }
   }
 
+  ## limited CNIs running on arm64
+  network {
+    plugin = "flannel"
+  }
+
+  ## default to arm64 versions that seem to work
+  system_images {
+    alpine                      = "rancher/rke-tools:v0.1.66"
+    nginx_proxy                 = "rancher/rke-tools:v0.1.66"
+    cert_downloader             = "rancher/rke-tools:v0.1.66"
+    kubernetes_services_sidecar = "rancher/rke-tools:v0.1.66"
+    nodelocal                   = "rancher/rke-tools:v0.1.66"
+    ingress                     = "rancher/nginx-ingress-controller:nginx-0.35.0-rancher2"
+    etcd                        = "rancher/coreos-etcd:v3.4.13-arm64"
+  }
+
   upgrade_strategy {
     drain                  = true
     max_unavailable_worker = "20%"
