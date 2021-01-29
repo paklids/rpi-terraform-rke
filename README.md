@@ -31,14 +31,12 @@ remotely via Terraform (see below)
 
 6. Pull down this repo using `git clone git@github.com:paklids/rpi-terraform-rke.git`
 
-7. Remove the microSD card and reinsert it to your machine.
+7. At this point you should see the system-boot partition mounted (or remove the microSD card and
+   reinsert it to your machine).
 
-You will need to put in the static IP address for each respective Pi and paste in the ssh public key
-that you created earlier.
+You will need to edit at least 2 files.
 
-Edit these files to match:
-
-file: `network-config` (edit IP address)
+Edit `network-config` similar to this (like updating the IP address):
 
 ```
 version: 2
@@ -56,12 +54,15 @@ ethernets:
       addresses: [192.168.1.1,8.8.8.8]
 ```
 
-file: `user-data` (paste in ssh public key)
+Edit `user-data` and paste in the SSH public key that you created earlier (should be in `terraformuser.pub`)
 
 ```
 #cloud-config
 # vim: syntax=yaml
 #
+growpart: { mode: "off" }
+locale: en_US.UTF-8
+resize_rootfs: false
 ssh_pwauth: false
 system_info:
   default_user:
@@ -76,14 +77,36 @@ users:
     lock_passwd: true
     shell: /bin/bash
     ssh_authorized_keys:
-      - ssh-rsa AAAAB3NzaC1... terraform
+      - ssh-rsa AAAAB...== terraform
+
+# expand the root partition up to a certain location on the disk
+# note that the value is the marker on the disk where the root partion will end
+# and can be in MB, GB or % of overall disk (see parted units)
+#
+# create an additional partition and mark where on the disk it starts and stops
+runcmd:
+  - [partprobe]
+  - 'echo "Yes\n8000MB" | sudo parted /dev/mmcblk0 ---pretend-input-tty resizepart 2'
+  - [resize2fs, /dev/mmcblk0p2]
+  - [partprobe]
+  - [parted, /dev/mmcblk0, mkpart, primary, ext4, 8001MB, 100%]
+  - [mkfs.ext4, /dev/mmcblk0p3]
+  - [partprobe]
+
+# this won't actually mount until first reboot of Pi
+mounts:
+  - ["/dev/mmcblk0p3", "/cluster"]
 ```
 
-More to come on customizing the partition layout on the SD card
+You may edit the partition values as needed. Once complete with those edits, you may unmount `system-boot`
+, move the SD card into its respective Pi and boot.
 
 8. Test that you can now ssh into your freshly built Pi
 
 `ssh -i ./terraformuser terraform@192.168.1.91`
+
+This will SSH to the IP address (where your Pi should now be located) using the `./terraformuser` SSH private key
+that you have stored locally. It will login as the `terraform` user, which should now be the default user on the Pi.
 
 Now you are almost ready to run Terraform!
 
