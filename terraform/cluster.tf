@@ -6,6 +6,8 @@ provider "rke" {
 # Create a new RKE cluster using arguments
 resource rke_cluster "berrycluster" {
   depends_on = [null_resource.next]
+  # rke may complain if the Docker version is newer than what Rancher has tested
+  ignore_docker_version = true
   #disable_port_check = true
   dynamic "nodes" {
     for_each = local.nodes
@@ -24,11 +26,11 @@ resource rke_cluster "berrycluster" {
 
   ## default to arm64 versions that seem to work
   system_images {
-    alpine                      = "rancher/rke-tools:v0.1.66"
-    nginx_proxy                 = "rancher/rke-tools:v0.1.66"
-    cert_downloader             = "rancher/rke-tools:v0.1.66"
-    kubernetes_services_sidecar = "rancher/rke-tools:v0.1.66"
-    nodelocal                   = "rancher/rke-tools:v0.1.66"
+    alpine                      = "rancher/rke-tools:v0.1.71"
+    nginx_proxy                 = "rancher/rke-tools:v0.1.71"
+    cert_downloader             = "rancher/rke-tools:v0.1.71"
+    kubernetes_services_sidecar = "rancher/rke-tools:v0.1.71"
+    nodelocal                   = "rancher/rke-tools:v0.1.71"
     ingress                     = "rancher/nginx-ingress-controller:nginx-0.35.0-rancher2"
     etcd                        = "rancher/coreos-etcd:v3.4.13-arm64"
   }

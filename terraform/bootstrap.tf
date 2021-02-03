@@ -2,7 +2,7 @@
 resource "null_resource" "raspberry_pi_bootstrap" {
   # increment version here if you wish this to run again after running it the first time
   triggers = {
-    version = "0.1.2"
+    version = "0.1.0"
   }
   for_each = local.nodes
   connection {
@@ -18,9 +18,18 @@ resource "null_resource" "raspberry_pi_bootstrap" {
     destination = "./daemon.json"
   }
 
+  # disable unattended upgrades because it can interrupt initial provisioning
+  provisioner "file" {
+    source      = "files/20auto-upgrades"
+    destination = "./20auto-upgrades"
+  }
+
   # for use with Ubuntu 20.10 for RPi 3 or 4 (arm64 only)
   provisioner "remote-exec" {
     inline = [
+      "sudo rm -f /etc/apt/apt.conf.d/20auto-upgrades",
+      "cat ~/20auto-upgrades | sudo tee /etc/apt/apt.conf.d/20auto-upgrades",
+      "rm -f ~/20auto-upgrades",
       # set hostname
       "sudo hostnamectl set-hostname ${each.value.hostname}",
       "if ! grep -qP ${each.value.hostname} /etc/hosts; then echo '127.0.1.1 ${each.value.hostname}' | sudo tee -a /etc/hosts; fi",
@@ -37,13 +46,17 @@ resource "null_resource" "raspberry_pi_bootstrap" {
       "sleep 5",
       "sudo apt --fix-broken install -y",
       "sudo apt-mark hold linux-raspi",
+      "sudo apt-get -y --purge autoremove",
 
       # install docker for arm64 (only have focal version right now)
+      # for now rancher rke requires a version of docker just little further behind
       "sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common ",
       "echo 'deb [arch=arm64] https://download.docker.com/linux/ubuntu focal stable' | sudo tee /etc/apt/sources.list.d/docker.list",
       "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add",
       "sudo apt-get update -y",
       "sudo apt-get install -y docker-ce docker-ce-cli containerd.io",
+      # rke may want a specific Docker version, or in the cluster.tf you can disable the Docker version check
+      #"sudo apt-get install -y docker-ce=5:19.03.14~3-0~ubuntu-focal docker-ce-cli=5:19.03.14~3-0~ubuntu-focal containerd.io",
 
       # replace the contents of /etc/docker/daemon.json to enable the systemd cgroup driver
       "sudo rm -f /etc/docker/daemon.json",
@@ -64,21 +77,6 @@ resource "null_resource" "raspberry_pi_bootstrap" {
       "rm -f ./k8s.conf",
       "sudo sysctl --system",
 
-      # # Add the packages.cloud.google.com apt key
-      # "curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -",
-
-      # # Add the Kubernetes repo (focal is not yet available so using xenial for now)
-      # "echo 'deb https://apt.kubernetes.io/ kubernetes-xenial main' | sudo tee /etc/apt/sources.list.d/kubernetes.list",
-
-      # # Update the apt cache and install kubelet, kubeadm, and kubectl
-      # "sudo apt update",
-      # "sleep 3",
-      # "sudo apt install -y kubelet kubeadm kubectl",
-      # "sudo apt autoremove -y",
-
-      # # Disable (mark as held) updates for the Kubernetes packages
-      # "sudo apt-mark hold kubelet kubeadm kubectl",
-
       # reboot to confirm the changes are persistent
       "sudo shutdown -r +0"
     ]
@@ -90,6 +88,7 @@ resource "time_sleep" "wait_90_seconds" {
   depends_on      = [null_resource.raspberry_pi_bootstrap]
   create_duration = "90s"
 }
+
 resource "null_resource" "next" {
   depends_on = [time_sleep.wait_90_seconds]
 }

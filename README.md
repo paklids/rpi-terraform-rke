@@ -10,6 +10,8 @@ a cluster using Rancher Lab's `rke` Terraform provider.
 There is a small amount of config to be done to each node and then everything can be configured
 remotely via Terraform (see below)
 
+Just a note: I would have loved to try Ubuntu Core 20 as the host OS but it simply does not support the cloud-init functionality that I need (yet).
+
 ## Where do I start?
 
 1. Buy a:
@@ -82,24 +84,24 @@ users:
 # expand the root partition up to a certain location on the disk
 # note that the value is the marker on the disk where the root partion will end
 # and can be in MB, GB or % of overall disk (see parted units)
+# note that the root partition is where container images are stored
 #
 # create an additional partition and mark where on the disk it starts and stops
+# this can be used later for a cluster filesystem
 runcmd:
   - [partprobe]
-  - 'echo "Yes\n8000MB" | sudo parted /dev/mmcblk0 ---pretend-input-tty resizepart 2'
+  - 'echo "Yes\n16000MB" | sudo parted /dev/mmcblk0 ---pretend-input-tty resizepart 2'
   - [resize2fs, /dev/mmcblk0p2]
   - [partprobe]
-  - [parted, /dev/mmcblk0, mkpart, primary, ext4, 8001MB, 100%]
-  - [mkfs.ext4, /dev/mmcblk0p3]
+  - [parted, /dev/mmcblk0, mkpart, primary, xfs, 16001MB, 100%]
+  - [mkfs.xfs, /dev/mmcblk0p3]
   - [partprobe]
-
-# this won't actually mount until first reboot of Pi
-mounts:
-  - ["/dev/mmcblk0p3", "/cluster"]
 ```
 
 You may edit the partition values as needed. Once complete with those edits, you may unmount `system-boot`
 , move the SD card into its respective Pi and boot.
+
+If Etcher is not your jam then I've included a script `write_sd.sh` to automate some of the manual steps. Read it, tweak it, improve it.
 
 8. Test that you can now ssh into your freshly built Pi
 
@@ -135,10 +137,26 @@ This will bootstrap the Pi nodes, reboot them and then provision the cluster usi
 
 `terraform output kube_config_yaml > kube_config_cluster.yml`
 
-5. Test that the cluster is running successfully
+And if you want you can make this your default kube config
+
+`tee ~/.kube/config <<<"$(terraform output kube_config_yaml)"`
+
+5. Test that the cluster is running successfully (omit kubeconfig flag if you've set this as your deafult cluster)
 
 `kubectl --kubeconfig kube_config_cluster.yml version`
 
 `kubectl --kubeconfig kube_config_cluster.yml get nodes`
 
 And there you go - a kubernetes cluster running on Raspberry Pi(s) !
+
+## What about distributed storage?
+
+If you followed these directions then you should have a partition on each node that can be used for distributed storage. Here are some commands for setting that up using kadalu.
+
+Follow the Quick Start Guide here https://github.com/kadalu/kadalu/blob/devel/doc/quick-start.md up to and including the part where you move the binary into your PATH. Then you can:
+
+`kubectl apply -f https://raw.githubusercontent.com/kadalu/kadalu/0.7.6/manifests/kadalu-operator-rke.yaml`
+
+`kubectl kadalu storage-add storage-pool-1 --type Replica3 --device 192.168.1.91:/dev/mmcblk0p3 --device 192.168.1.92:/dev/mmcblk0p3 --device 192.168.1.93:/dev/mmcblk0p3`
+
+BTW - Kadalu does not seem to respect the `--kubeconfig` flag yet, but we can work around that using one of the previous recommendations.
