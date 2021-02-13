@@ -2,7 +2,7 @@
 resource "null_resource" "raspberry_pi_bootstrap" {
   # increment version here if you wish this to run again after running it the first time
   triggers = {
-    version = "0.1.0"
+    version = "0.1.2"
   }
   for_each = local.nodes
   connection {
@@ -18,21 +18,18 @@ resource "null_resource" "raspberry_pi_bootstrap" {
     destination = "./daemon.json"
   }
 
-  # disable unattended upgrades because it can interrupt initial provisioning
-  provisioner "file" {
-    source      = "files/20auto-upgrades"
-    destination = "./20auto-upgrades"
-  }
-
   # for use with Ubuntu 20.10 for RPi 3 or 4 (arm64 only)
   provisioner "remote-exec" {
     inline = [
-      "sudo rm -f /etc/apt/apt.conf.d/20auto-upgrades",
-      "cat ~/20auto-upgrades | sudo tee /etc/apt/apt.conf.d/20auto-upgrades",
-      "rm -f ~/20auto-upgrades",
       # set hostname
       "sudo hostnamectl set-hostname ${each.value.hostname}",
       "if ! grep -qP ${each.value.hostname} /etc/hosts; then echo '127.0.1.1 ${each.value.hostname}' | sudo tee -a /etc/hosts; fi",
+
+      # there is a better way to do this but this will suffice for now
+      # populate etc hosts so that hosts can resolve each other
+      "if ! grep -q 'pinode1' /etc/hosts; then echo -e '192.168.1.91\tpinode1' | sudo tee -a /etc/hosts; fi",
+      "if ! grep -q 'pinode2' /etc/hosts; then echo -e '192.168.1.92\tpinode2' | sudo tee -a /etc/hosts; fi",
+      "if ! grep -q 'pinode3' /etc/hosts; then echo -e '192.168.1.93\tpinode3' | sudo tee -a /etc/hosts; fi",
 
       # date time config (you use UTC...right?!?)
       "sudo timedatectl set-timezone UTC",

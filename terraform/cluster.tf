@@ -12,7 +12,9 @@ resource rke_cluster "berrycluster" {
   dynamic "nodes" {
     for_each = local.nodes
     content {
-      address = nodes.value.ip_addr
+      # you can use address = nodes.value.ip_addr but this may harm usage with other tf providers
+      # otherwise set the ip to name mappings within /etc/hosts
+      address = nodes.value.hostname
       user    = local.user
       role    = nodes.value.role
       ssh_key = file("${path.module}/../${local.private_key}")

@@ -1,0 +1,28 @@
+# File: sample-storage-config.yaml
+---
+apiVersion: "kadalu-operator.storage/v1alpha1"
+kind: "KadaluStorage"
+metadata:
+  name: "storage-pool-1"
+spec:
+  type: "Replica3"
+  storage:
+    # running kadalu on the controlplane nodes shows some instability
+    # - node: pinode1
+    #   device: /dev/mmcblk0p3
+    - node: pinode2
+      device: /dev/mmcblk0p3
+    - node: pinode3
+      device: /dev/mmcblk0p3
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pv1
+spec:
+  storageClassName: kadalu.replica3
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi

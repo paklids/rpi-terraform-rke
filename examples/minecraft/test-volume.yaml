@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-pvc-test
+spec:
+  containers:
+    - image: alpine:latest
+      name: alpine
+      command:
+        - "sleep"
+        - "3600"
+      volumeMounts:
+        - mountPath: /test-mnt
+          name: test-volume
+          # if you need to edit any minecraft config then you need read-write
+          readOnly: false
+  volumes:
+    - name: test-volume
+      persistentVolumeClaim:
+        claimName: pv1
+        readOnly: false

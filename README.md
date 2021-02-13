@@ -151,12 +151,6 @@ And there you go - a kubernetes cluster running on Raspberry Pi(s) !
 
 ## What about distributed storage?
 
-If you followed these directions then you should have a partition on each node that can be used for distributed storage. Here are some commands for setting that up using kadalu.
+If you followed these directions then you should have a partition on each node that can be used for distributed storage.
 
-Follow the Quick Start Guide here https://github.com/kadalu/kadalu/blob/devel/doc/quick-start.md up to and including the part where you move the binary into your PATH. Then you can:
-
-`kubectl apply -f https://raw.githubusercontent.com/kadalu/kadalu/0.7.6/manifests/kadalu-operator-rke.yaml`
-
-`kubectl kadalu storage-add storage-pool-1 --type Replica3 --device 192.168.1.91:/dev/mmcblk0p3 --device 192.168.1.92:/dev/mmcblk0p3 --device 192.168.1.93:/dev/mmcblk0p3`
-
-BTW - Kadalu does not seem to respect the `--kubeconfig` flag yet, but we can work around that using one of the previous recommendations.
+See in the examples directory where the README and files are that you can setup Kadalu, MetalLB and Minecraft.
