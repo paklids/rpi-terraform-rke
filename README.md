@@ -94,7 +94,7 @@ runcmd:
   - [resize2fs, /dev/mmcblk0p2]
   - [partprobe]
   - [parted, /dev/mmcblk0, mkpart, primary, xfs, 16001MB, 100%]
-  - [mkfs.xfs, /dev/mmcblk0p3]
+  - [mkfs.xfs, -f, /dev/mmcblk0p3]
   - [partprobe]
 ```
 
@@ -133,19 +133,21 @@ If it looks good then run `terraform apply`
 
 This will bootstrap the Pi nodes, reboot them and then provision the cluster using `rke`
 
-4. Take the output from Terraform to build your `kube_config_cluster.yml` file used by kubectl
-
-`terraform output kube_config_yaml > kube_config_cluster.yml`
-
-And if you want you can make this your default kube config
+4. Take the output from terraform and set that to your default kube config
 
 `tee ~/.kube/config <<<"$(terraform output kube_config_yaml)"`
 
-5. Test that the cluster is running successfully (omit kubeconfig flag if you've set this as your deafult cluster)
+OR
 
-`kubectl --kubeconfig kube_config_cluster.yml version`
+Take the output from Terraform to build your `kube_config_cluster.yml` file used by kubectl
 
-`kubectl --kubeconfig kube_config_cluster.yml get nodes`
+`terraform output kube_config_yaml > kube_config_cluster.yml`
+
+5. Test that the cluster is running successfully (add kubeconfig flag if you're using that `--kubeconfig kube_config_cluster.yml` )
+
+`kubectl version`
+
+`kubectl get nodes`
 
 And there you go - a kubernetes cluster running on Raspberry Pi(s) !
 
@@ -153,4 +155,4 @@ And there you go - a kubernetes cluster running on Raspberry Pi(s) !
 
 If you followed these directions then you should have a partition on each node that can be used for distributed storage.
 
-See in the examples directory where the README and files are that you can setup Kadalu, MetalLB and Minecraft.
+See the `examples` directory where you may find the README and files to setup Kadalu, MetalLB and Minecraft.

@@ -5,9 +5,9 @@ kind: "KadaluStorage"
 metadata:
   name: "storage-pool-1"
 spec:
-  type: "Replica3"
+  type: "Replica2"
   storage:
-    # running kadalu on the controlplane nodes shows some instability
+    # does running kadalu on the controlplane shows instability?
     # - node: pinode1
     #   device: /dev/mmcblk0p3
     - node: pinode2
@@ -20,9 +20,9 @@ apiVersion: v1
 metadata:
   name: pv1
 spec:
-  storageClassName: kadalu.replica3
+  storageClassName: kadalu.replica2
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 1Gi
+      storage: 2Gi
