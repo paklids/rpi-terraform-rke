@@ -35,6 +35,8 @@ kubectl apply -f metallb/config.yaml
 
 ## Install the Minecraft Helm chart
 
+Install Helm to leverage it's amazing power (On a mac you can simply `brew install helm`)
+
 Edit the values.yaml to match your needs. Note the sections `persistence.dataDir.existingClaim` and `minecraftServer.serviceType`
 
 ```
@@ -50,8 +52,18 @@ kubectl apply -f test-volume.yaml
 kubectl exec --stdin --tty pod-pvc-test -- /bin/sh
 ```
 
-If you need to rsync world data to from some other server then you'll need to install those tools within that pod-pvc-test container
+If you need to rsync world data to from some other server then you'll need to install rsync & ssh within that pod-pvc-test container
 
 ```
 apk add rsync openssh
+```
+
+## Publish your server using Dynamic DNS
+
+You'll still need to set up port forwarding on your router to point to the private virtual IP & port that you've already set
+
+Now edit the `values.yaml` for the ddclient (similar to ddclient.conf) & publish that
+
+```
+helm install ddclient k8s-at-home/ddclient --values ddclient/values.yaml
 ```

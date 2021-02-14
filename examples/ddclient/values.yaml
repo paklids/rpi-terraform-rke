@@ -1,0 +1,37 @@
+# This can be installed using direction provided here https://artifacthub.io/packages/helm/k8s-at-home/ddclient
+# Default values for ddclient.
+
+image:
+  repository: linuxserver/ddclient
+  pullPolicy: IfNotPresent
+  tag: version-v3.9.1
+
+# env: {}
+#   TZ: UTC
+#   PUID: 10000
+#   PGID: 10000
+
+service:
+  enabled: false
+
+probes:
+  liveness:
+    enabled: false
+  readiness:
+    enabled: false
+  startup:
+    enabled: false
+
+strategy:
+  type: Recreate
+
+config: |
+  # This is the configuration for ddclient
+  # Inorder for it to function you need to set it up
+  # e.g. this is the config for dynu.com
+  use=web, web=checkip.dynu.com/, web-skip='IP Address'
+  server=api.dynu.com
+  protocol=dyndns2
+  login=my_dynu_account@gmail.com
+  password=secret_password
+  public_hostname.dynu.com
