@@ -43,6 +43,12 @@ Edit the values.yaml to match your needs. Note the sections `persistence.dataDir
 helm install minecraft -f values.yaml itzg/minecraft
 ```
 
+or make changes to the `values.yaml`
+
+```
+helm upgrade minecraft -f values.yaml itzg/minecraft
+```
+
 ## Edit minecraft data on the fly
 
 perform mantenance on the minecraft data inside the Persistent Volume

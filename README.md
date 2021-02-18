@@ -2,6 +2,8 @@
 
 Setup a Raspberry Pi Kubernetes cluster with Terraform
 
+See examples for setting up distributed storage using Kadalu, using Helm charts to run Minecraft and publish your dynamic dns.
+
 ## What does this do?
 
 This takes a Raspberry Pi (arm64 - so It will need to be a 3b or 4b) and sets these up in
